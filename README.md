@@ -1,4 +1,4 @@
-This code generates X-ray lightcurves from user input parameters. Bayesian Blocks are then run on the simulated event list and the flare duration and fluences are printed to the sceen.
+This code generates X-ray lightcurves from user input parameters. Bayesian Blocks are then run on the simulated event list and the flare duration and fluences are printed to the sceen. The light curve is also plotted. Please note that the bins are 300 s and each point is the middle of a bin, such that there are no points exactly on the edge of a given plot
 
 Input parameters:
 - Quiescence count rate (ct/s)
