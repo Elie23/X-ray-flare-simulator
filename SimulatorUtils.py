@@ -126,7 +126,7 @@ def binnyboy(bin_size, T, time_evt):
     #print(f)
     return bin_array, binned_cr, binned_cr_err
 
-def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, popt,pstd, nbootstrap=0, plot = False, alpha=5., mcrtoA=1.67):
+def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, popt,pstd, nbootstrap=0, plot = False, save_plot=False, alpha=5., mcrtoA=1.67):
     '''
     Generates a Gaussian flare given certain parameters
     Parameters
@@ -226,6 +226,8 @@ def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, p
             plt.ylabel('CDF')
             plt.xlabel('time(s)')
             plt.legend()
+            if save_plot:
+                plt.savefig('CDF.pdf') 
             plt.show()
 
 #    print(N_g, N_c)
