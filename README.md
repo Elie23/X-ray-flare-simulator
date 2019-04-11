@@ -1,6 +1,6 @@
 This code generates X-ray lightcurves from user input parameters. Bayesian Blocks are then run on the simulated event list and the flare duration and fluences are printed to the sceen. The light curve is also plotted. Please note that the bins are 300 s and each point is the middle of a bin, such that there are no points exactly on the edge of a given plot.
 
-To run the code, open the notebook and run it.
+To run the code, open the notebook and run it. ModifiedNCP_PRIORxbblocks.py contains the Bayesian blocks implementation (a modified version of Peter William's implementation; https://newton.cx/~peter/2013/05/bayesian-blocks-analysis-in-python/. The txt file contains 10 runs of ncp-prior vs N for a fixed p0=0.05 which are used to calibrate ncp_prior. 
 
 Input parameters: (directly in the notebook)
 - Quiescence count rate (ct/s)
