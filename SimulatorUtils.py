@@ -126,7 +126,7 @@ def binnyboy(bin_size, T, time_evt):
     #print(f)
     return bin_array, binned_cr, binned_cr_err
 
-def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, popt,pstd, nbootstrap=0, plot = False, save_plot=False, alpha=5., mcrtoA=1.67):
+def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, popt,pstd, nbootstrap=0, plot = False, save_plot=False, plot_name="CDF.pdf", alpha=5., mcrtoA=1.67):
     '''
     Generates a Gaussian flare given certain parameters
     Parameters
@@ -157,10 +157,22 @@ def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, p
         1-sigma errors on the best fit parameters for the Bayesian Blocks parameters
 
     nbootstrap: int
-        Number of bootstraps to calculate the error of the Bayesian Blocks
+        Number of bootstraps to calculate the error of the Bayesian Blocks (should be 0)
         
     alpha: float
         number of sigma to integrate the counts around a flare
+
+    plot: Bool
+	Whether to plot the CDF
+
+    mcrtoA: float
+	Factor to compute the flare count rate amplitude A from the flare mean count rate. 
+
+    save_plot: bool
+	Whether to save the plot of the CDF
+
+    plot_name: string
+	Name of the plot to be saved
         
     Returns
     ----------
@@ -168,7 +180,7 @@ def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, p
         Array of the event times
         
     info: holder
-        Holder with a bunch of info about the BB
+        Holder with a bunch of info about the Bayesian Blocks (see ModifiedNCP_PRIORxbblocks.py)
     '''
     t = np.linspace(0,T,int(T/frame_time+1))
     N_c = int(quiescence_cr * T)
@@ -227,7 +239,7 @@ def flare_gen(T, frame_time, flare_t, flare_sig, flare_mean_cr, quiescence_cr, p
             plt.xlabel('time(s)')
             plt.legend()
             if save_plot:
-                plt.savefig('CDF.pdf') 
+                plt.savefig(plot_name) 
             plt.show()
 
 #    print(N_g, N_c)
@@ -310,7 +322,7 @@ def get_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, incident_cr, o
     block:  array of floats
         Same as data but for pile-up corrected values and for each FLARE instead of each block (flares can be made of multiple blocks)        
     LoRate : array of floats
-        Contains the mean count rate of the longest block and its standard deviation
+        Contains the mean count rate of the longest block and its Poisson error
     '''    
     #Note how many blocks there are in the obsid
     num_blocks = np.size(redges)
@@ -352,7 +364,8 @@ def get_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, incident_cr, o
             rateserr = np.delete(rateserr,del_blocks.astype(int)) 
         #Note how many blocks there are in the obsid
         num_blocks = np.size(redges)
-        quies_id = np.argmax(widths)             
+        quies_id = np.argmax(widths)
+	#Identify each flaring block             
         flares_id = (rates-amplitude_criteria*rateserr)>(rates[quies_id] + amplitude_criteria*rateserr[quies_id])
         flares = ma.array(rates, mask = ~flares_id)
         data = np.ones(6).reshape(1,6)
@@ -362,7 +375,7 @@ def get_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, incident_cr, o
         data = np.delete(data, (0), axis = 0)
         LoRate = np.array([rates[quies_id], rateserr[quies_id]]).reshape(1,2)
 
-        #UNPILE EACH FLARE BLOCK RIGHT NOW INSTEAD OF DOING IT AFTER COMBINING MULTIPLE BLOCKS!!!
+        #UNPILE EACH FLARE BLOCK
         for p in range(num_blocks):
             if flares_id[p]:
                 #print('block',p,'rate before pile-up corr ',rates[p], 'counts ', counts[p], 'rateserr ', rateserr[p])
@@ -419,7 +432,7 @@ def get_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, incident_cr, o
                                     flare_block = np.concatenate((flare_block, np.array([ledges[j], 
                                                      redges[j], counts[j], widths[j], 
                                                      rates[j], rateserr[j]]).reshape(1,6)), axis = 0)
-                                #Delete the first row that was use to initiate the array
+                                #Delete the first row that was used to initiate the array
                                 flare_block = np.delete(flare_block, (0), axis = 0)
                                 
                                 #Finalize the block
@@ -546,7 +559,7 @@ def XVPget_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, Q_ratio,new
     block:  array of floats
         Same as data, but for each FLARE instead of each block (flares can be made of multiple blocks)        
     LoRate : array of floats
-        Contains the mean count rate of the longest block and its standard deviation
+        Contains the mean count rate of the longest block and its Poisson error
     '''    
     #Note how many blocks there are in the obsid
     num_blocks = np.size(redges)
@@ -588,7 +601,8 @@ def XVPget_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, Q_ratio,new
             rateserr = np.delete(rateserr,del_blocks.astype(int)) 
         #Note how many blocks there are in the obsid
         num_blocks = np.size(redges)
-        quies_id = np.argmax(widths)             
+        quies_id = np.argmax(widths)   
+	#identify each flaring block          
         flares_id = (rates-amplitude_criteria*rateserr)>(rates[quies_id] + amplitude_criteria*rateserr[quies_id])
         flares = ma.array(rates, mask = ~flares_id)
         data = np.ones(6).reshape(1,6)
@@ -598,7 +612,7 @@ def XVPget_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, Q_ratio,new
         data = np.delete(data, (0), axis = 0)
         LoRate = np.array([rates[quies_id], rateserr[quies_id]]).reshape(1,2)
             
-        #Unpile each block right now instead of doing it after combining multiple blocks!!!
+        #Unpile each block right now
         for p in range(num_blocks):
             if flares_id[p]:    
                 #This function gives only the "flare" pile-up corrected cr so we need to add the quiescence back
@@ -730,8 +744,8 @@ def XVPget_flare_bb_nobsnopcr(ledges, redges, counts, widths, rates, Q_ratio,new
 
 def XVPget_flare_piled(test_cr,Q,f2z,Q_ratio,frame_time,alpha):
     '''
-    Given an incoming flare cr (test_cr) with the unpiled f2z 1st/0th order flare cr ratio and a quiescence cr Q
-    with a 0th/1st order Q ratio of Q_ratio, outputs the detected cr piled_flare_cr and the detected
+    Given an incoming flare cr (test_cr) with the unpiled f2z 1st/0th order flare cr ratio, a quiescence cr Q
+    with a 0th/1st order Q ratio of Q_ratio, and the frame_time (s) with the alpha pile-up parameter, outputs the detected cr piled_flare_cr and the detected
     1st/0th flare cr ratio
     '''
     flare_0th = test_cr/(1+f2z)
@@ -744,14 +758,14 @@ def XVPget_flare_piled(test_cr,Q,f2z,Q_ratio,frame_time,alpha):
 
 def XVPget_flare_unpiled(det_piled_cr,det_Q,Q_ratio,new_ratio,piled_cr,incident_cr,observed_cr):
     '''
-    Given a quiescence (det_Q) and a flare cr (det_piled_cr), it finds the un-piled cr of said flare using the pile-up calibration
+    Given a quiescence (det_Q) and a flare cr (det_piled_cr), it finds the un-piled cr of said flare using the pile-up calibration (XVPget_flare_piled)
     based on Q_ratio and the 0th/1st order ratio in flares from my data reduction of XVP data
 
     Q_ratio: 0th/tot quiescence cr
 
     new_ratio: how the ratio of 1st/0th order counts in flares changes with cr due to pile-up
 
-    piled_cr: From the calibration, piled-up cr each corresponding to a new ratio
+    piled_cr: From the calibration (XVPget_flare_piled), piled-up cr each corresponding to a new ratio
 
     det_piled_cr: Detected cr (not quie sub)
 
